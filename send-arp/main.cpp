@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
 
     ReqReppacket.arp.sip = htonl(Ip(IP_addr));
 
-    memset(ReqReppacket.arp.tmac, 0x00, sizeof(ReqReppacket.arp.tmac)); //you
+    memset(ReqReppacket.arp.tmac, 0x00, sizeof(mac_addr)); //you
 
     ReqReppacket.arp.tip = htonl(Ip(argv[2]));
 
