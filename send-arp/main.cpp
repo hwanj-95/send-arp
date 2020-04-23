@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
 
     EthArpPacket ReqReppacket;
 
-    memset(ReqReppacket.eth.ether_dhost, 0xFF, sizeof(ReqReppacket.eth.ether_dhost));
+    memset(ReqReppacket.eth.ether_dhost, 0xFF, sizeof(mac_addr));
 
     memcpy(&ReqReppacket.eth.ether_shost, &mac_addr, sizeof(mac_addr));
 
@@ -144,8 +144,8 @@ int main(int argc, char* argv[]) {
         if(etharp->arp.op_ != htons(ARPOP_REPLY)) continue;
         if(etharp->arp.sip != htonl(Ip(argv[2]))) continue;
 
-        memcpy(&ReqReppacket.eth.ether_dhost, &etharp->eth.ether_shost, sizeof(ReqReppacket.eth.ether_dhost));
-        memcpy(&ReqReppacket.arp.tmac, &etharp->arp.smac, sizeof(ReqReppacket.arp.tmac));
+        memcpy(&ReqReppacket.eth.ether_dhost, &etharp->eth.ether_shost, sizeof(mac_addr));
+        memcpy(&ReqReppacket.arp.tmac, &etharp->arp.smac, sizeof(mac_addr));
         ReqReppacket.arp.op_ = htons(ARPOP_REPLY);
         ReqReppacket.arp.sip = htonl(Ip(argv[3])); // gateway
 
